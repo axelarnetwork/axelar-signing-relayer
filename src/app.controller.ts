@@ -12,13 +12,13 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Post('link-address')
+  @Post('get_link_address')
   @HttpCode(HttpStatus.OK)
   linkAddress(@Body() dto: LinkAddressDto, @Headers('x-trace-id') traceId: string) {
     return this.appService.linkAddress(dto);
   }
 
-  @Post('confirm-deposit')
+  @Post('confirm_deposit_tx')
   @HttpCode(HttpStatus.OK)
   confirmDeposit(@Body() dto: ConfirmDepositDto, @Headers('x-trace-id') traceId: string) {
     return this.appService.confirmDeposit(dto);
