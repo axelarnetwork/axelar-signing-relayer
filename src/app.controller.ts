@@ -23,4 +23,35 @@ export class AppController {
   confirmDeposit(@Body() dto: ConfirmDepositDto, @Headers('x-trace-id') traceId: string) {
     return this.appService.confirmDeposit(dto);
   }
+
+  @Post('confirm_gateway_tx')
+  @HttpCode(HttpStatus.OK)
+  confirmGatewayTx(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+    return this.appService.confirmGatewayTx(dto);
+  }
+
+  @Post('execute_pending_transfers')
+  @HttpCode(HttpStatus.OK)
+  executePendingTransfers(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+    return this.appService.executePendingTransfers(dto);
+  }
+
+  @Post('create_pending_transfers')
+  @HttpCode(HttpStatus.OK)
+  createPendingTransfers(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+    return this.appService.createPendingTransfers(dto);
+  }
+
+  @Post('sign_commands')
+  @HttpCode(HttpStatus.OK)
+  signCommands(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+    return this.appService.signCommands(dto);
+  }
+
+  @Post('route_ibc_transfers')
+  @HttpCode(HttpStatus.OK)
+  routeIBCTransfers(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+    return this.appService.routeIBCTransfers(dto);
+  }
+
 }

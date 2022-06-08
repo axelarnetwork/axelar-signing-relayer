@@ -21,7 +21,7 @@ export class AxelarSigningClientUtil {
   public async initSigner(environment: Environment, mnemonic: string) {
     const config: AxelarSigningClientConfig = {
       environment,
-      mnemonic,
+      walletDetails: { mnemonic },
       options: {},
     };
     this.signer = await AxelarSigningClient.initOrGetAxelarSigningClient(
