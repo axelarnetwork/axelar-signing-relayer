@@ -45,10 +45,10 @@
     ora "5.4.1"
     rxjs "6.6.7"
 
-"@axelar-network/axelarjs-sdk@0.6.0-alpha.2":
-  version "0.6.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@axelar-network/axelarjs-sdk/-/axelarjs-sdk-0.6.0-alpha.2.tgz#19dd56461df991940ebc69475a51d0cff75e4455"
-  integrity sha512-581DjrNTb+WUsA3fy/wxd7Rt9/O1lt32QUyiRIripk7XC1inIGYip26DmurSUZgxhxiTRJoAKZaTBajujsw0ew==
+"@axelar-network/axelarjs-sdk@0.6.0-alpha.3":
+  version "0.6.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@axelar-network/axelarjs-sdk/-/axelarjs-sdk-0.6.0-alpha.3.tgz#2926dc9336518b413560f3b2d1868b4eb12e8d54"
+  integrity sha512-dsb/stloDKgYFw+nLrnWX+yI/Q4foq317aJgY8lnanMFoJ2EPg7CENOY7PyCjCSCfcyM79YmuCcfMsRe6Cd3Kg==
   dependencies:
     "@axelar-network/axelarjs-types" "^0.0.3"
     "@cosmjs/stargate" "^0.28.4"
