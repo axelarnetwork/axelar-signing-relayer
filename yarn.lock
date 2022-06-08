@@ -45,7 +45,7 @@
     ora "5.4.1"
     rxjs "6.6.7"
 
-"@axelar-network/axelarjs-sdk@^0.6.0-alpha.2":
+"@axelar-network/axelarjs-sdk@0.6.0-alpha.2":
   version "0.6.0-alpha.2"
   resolved "https://registry.yarnpkg.com/@axelar-network/axelarjs-sdk/-/axelarjs-sdk-0.6.0-alpha.2.tgz#19dd56461df991940ebc69475a51d0cff75e4455"
   integrity sha512-581DjrNTb+WUsA3fy/wxd7Rt9/O1lt32QUyiRIripk7XC1inIGYip26DmurSUZgxhxiTRJoAKZaTBajujsw0ew==
@@ -67,7 +67,7 @@
     socket.io-client "^4.2.0"
     uuid "^8.3.2"
 
-"@axelar-network/axelarjs-types@^0.0.3":
+"@axelar-network/axelarjs-types@0.0.3", "@axelar-network/axelarjs-types@^0.0.3":
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/@axelar-network/axelarjs-types/-/axelarjs-types-0.0.3.tgz#46b189f1afb9358628df49e76b3c31cb552fc258"
   integrity sha512-Y3CgKAHOnVyU/0JFulUyZkSxeVkMEvt4eTbrXy8bx3GCAhqx7rc45fz2VJPVr1f24lFwEAGGc5VbeGrXZodssw==
@@ -1140,7 +1140,7 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@nestjs/cli@^8.2.6":
+"@nestjs/cli@^8.0.0":
   version "8.2.6"
   resolved "https://registry.yarnpkg.com/@nestjs/cli/-/cli-8.2.6.tgz#915aef9c1c025280ab8ebc915530fa0090bcbe49"
   integrity sha512-uvwKbUZJmgdJu1D24e+uUqHnwoB/0R9hLfUJjr5pTvLlP/RJugHAdJr7m1dQe92Xzdyi36kBN4Id3RXHgfz1UA==

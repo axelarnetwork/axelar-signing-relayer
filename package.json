@@ -21,7 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@axelar-network/axelarjs-sdk": "^0.6.0-alpha.2",
+    "@axelar-network/axelarjs-sdk": "0.6.0-alpha.2",
+    "@axelar-network/axelarjs-types": "0.0.3",
     "@cosmjs/stargate": "^0.28.4",
     "@nestjs/cli": "^8.0.0",
     "@nestjs/common": "^8.0.0",
