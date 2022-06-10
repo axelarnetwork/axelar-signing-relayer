@@ -54,4 +54,10 @@ export class AppController {
     return this.appService.routeIBCTransfers(dto);
   }
 
+  @Post('sign_evm_tx')
+  @HttpCode(HttpStatus.OK)
+  signEvmTx(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+    return this.appService.signEvmTx(dto);
+  }
+
 }

@@ -7,7 +7,8 @@ import * as Joi from 'joi';
     _ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        MNEMONIC: Joi.string().required(),
+        KEPLR_MNEMONIC: Joi.string().required(),
+        EVM_MNEMONIC: Joi.string().required(),
         ENVIRONMENT: Joi.string()
           .valid('local', 'mainnet', 'testnet', 'devnet')
           .required(),

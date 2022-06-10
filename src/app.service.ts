@@ -22,13 +22,18 @@ import { STANDARD_FEE } from '@axelar-network/axelarjs-sdk';
 import { LinkAddressDto } from './dto/link-address.dto';
 import { DeliverTxResponse, StdFee } from '@cosmjs/stargate';
 import { utils } from 'ethers';
+import { EvmSigningClientUtil } from './evm-signer.service';
+import { TransactionRequest } from '@ethersproject/abstract-provider';
 
 @Injectable()
 export class AppService {
-  constructor(private axelarSigningClient: AxelarSigningClientUtil) {}
+  
+  constructor(private axelarSigningClient: AxelarSigningClientUtil, private evmSigningClient: EvmSigningClientUtil) {}
+
   getHello(): string {
     return 'Hello World!';
   }
+
   async linkAddress(dto: LinkAddressDto): Promise<Uint8Array | DeliverTxResponse> {
     const { recipientAddr, recipientChain, asset, fee, memo, broadcast } = dto;
     const payload: EncodeObject = {
@@ -48,6 +53,7 @@ export class AppService {
         )
       : await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
   }
+
   async confirmDeposit(dto: ConfirmDepositDto): Promise<Uint8Array> {
     const { depositAddress, denom, memo, module, fee, sourceChain, burnerAddress, txHash } = dto;
     const payload: EncodeObject =
@@ -145,6 +151,11 @@ export class AppService {
       }),
     };
     return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
+  }
+
+  async signEvmTx(dto: { gatewayAddress: string, txRequest: TransactionRequest }): Promise<string> {
+    const { gatewayAddress, txRequest } = dto;
+    return await this.evmSigningClient.signTx(gatewayAddress, txRequest);
   }
 
   private async signAndGetTxBytes(

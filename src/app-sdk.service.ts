@@ -13,15 +13,15 @@ export class AxelarSigningClientUtil {
 
   constructor(private config: ConfigService) {
     const environment = this.config.get('ENVIRONMENT');
-    const mnemonic = this.config.get('MNEMONIC');
+    const keplr_mnemonic = this.config.get('KEPLR_MNEMONIC');
     this.environment = environment;
-    this.initSigner(this.environment as Environment, mnemonic);
+    this.initSigner(this.environment as Environment, keplr_mnemonic);
   }
 
   public async initSigner(environment: Environment, mnemonic: string) {
     const config: AxelarSigningClientConfig = {
       environment,
-      walletDetails: { mnemonic },
+      cosmosBasedWalletDetails: { mnemonic },
       options: {},
     };
     this.signer = await AxelarSigningClient.initOrGetAxelarSigningClient(
