@@ -27,8 +27,10 @@ import { TransactionRequest } from '@ethersproject/abstract-provider';
 
 @Injectable()
 export class AppService {
-  
-  constructor(private axelarSigningClient: AxelarSigningClientUtil, private evmSigningClient: EvmSigningClientUtil) {}
+  constructor(
+    private axelarSigningClient: AxelarSigningClientUtil,
+    private evmSigningClient: EvmSigningClientUtil,
+  ) {}
 
   getHello(): string {
     return 'Hello World!';
@@ -79,7 +81,7 @@ export class AppService {
   }
   async confirmGatewayTx(dto: any): Promise<Uint8Array> {
     const { memo, fee, chain, txHash } = dto;
-    console.log(dto)
+    console.log(dto);
     const payload: EncodeObject = {
       typeUrl: `/${EvmProtobufPackage}.ConfirmGatewayTxRequest`,
       value: ConfirmGatewayTxRequest.fromPartial({
@@ -87,7 +89,7 @@ export class AppService {
         chain,
         txId: utils.arrayify(txHash),
       }),
-    }
+    };
     return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
   }
 
@@ -153,9 +155,15 @@ export class AppService {
     return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
   }
 
-  async signEvmTx(dto: { gatewayAddress: string, txRequest: TransactionRequest }): Promise<string> {
-    const { gatewayAddress, txRequest } = dto;
-    return await this.evmSigningClient.signTx(gatewayAddress, txRequest);
+  async signEvmTx(dto: {
+    chain: string;
+    gatewayAddress: string;
+    txRequest: TransactionRequest;
+  }): Promise<{ data: string }> {
+    const { chain, gatewayAddress, txRequest } = dto;
+    return {
+      data: await this.evmSigningClient.signTx(chain, gatewayAddress, txRequest),
+    };
   }
 
   private async signAndGetTxBytes(
