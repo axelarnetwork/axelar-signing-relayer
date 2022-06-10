@@ -172,8 +172,10 @@ export class AppService {
     txRequest: TransactionRequest;
   }): Promise<{ data: ethers.providers.TransactionResponse }> {
     const { chain, gatewayAddress, txRequest } = dto;
+    const data = await this.evmSigningClient.sendTx(chain, gatewayAddress, txRequest);
+    console.log('data', data);
     return {
-      data: await this.evmSigningClient.sendTx(chain, gatewayAddress, txRequest),
+      data,
     };
   }
 
