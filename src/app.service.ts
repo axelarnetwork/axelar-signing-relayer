@@ -21,7 +21,7 @@ import { toAccAddress } from '@cosmjs/stargate/build/queryclient/utils';
 import { STANDARD_FEE } from '@axelar-network/axelarjs-sdk';
 import { LinkAddressDto } from './dto/link-address.dto';
 import { DeliverTxResponse, StdFee } from '@cosmjs/stargate';
-import { utils } from 'ethers';
+import { ethers, utils } from 'ethers';
 import { EvmSigningClientUtil } from './evm-signer.service';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 
@@ -170,7 +170,7 @@ export class AppService {
     chain: string;
     gatewayAddress: string;
     txRequest: TransactionRequest;
-  }): Promise<{ data: string }> {
+  }): Promise<{ data: ethers.providers.TransactionResponse }> {
     const { chain, gatewayAddress, txRequest } = dto;
     return {
       data: await this.evmSigningClient.sendTx(chain, gatewayAddress, txRequest),

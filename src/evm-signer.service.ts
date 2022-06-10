@@ -35,7 +35,7 @@ export class EvmSigningClientUtil {
     return tx;
   }
 
-  public async sendTx(chain: string, gatewayAddress: string, opts: TransactionRequest): Promise<any> {
+  public async sendTx(chain: string, gatewayAddress: string, opts: TransactionRequest): Promise<ethers.providers.TransactionResponse> {
     const { maxFeePerGas, maxPriorityFeePerGas } = opts;
     const rpcUrl = rpcMap[chain.toLowerCase()]
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
@@ -49,6 +49,7 @@ export class EvmSigningClientUtil {
     };
     await this.signer.estimateGas(txRequest);
     const tx = await this.signer.sendTransaction(txRequest);
+    tx.wait(1);
     return tx;
   }
 }
