@@ -63,7 +63,7 @@ export class AppController {
   @Post('send_evm_tx')
   @HttpCode(HttpStatus.OK)
   sendEvmTx(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
-    return this.appService.signEvmTx(dto);
+    return this.appService.sendEvmTx(dto);
   }
 
 }

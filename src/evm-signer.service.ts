@@ -50,7 +50,6 @@ export class EvmSigningClientUtil {
     await this.signer.estimateGas(txRequest);
     const tx = await this.signer.sendTransaction(txRequest);
     tx.wait(1);
-    console.log("resulting tx",tx)
     return tx;
   }
 }
