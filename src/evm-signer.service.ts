@@ -32,7 +32,23 @@ export class EvmSigningClientUtil {
     };
     await this.signer.estimateGas(txRequest);
     const tx = await this.signer.signTransaction(await this.signer.populateTransaction(txRequest));
-    // console.log("signed transaction", tx);
+    return tx;
+  }
+
+  public async sendTx(chain: string, gatewayAddress: string, opts: TransactionRequest): Promise<any> {
+    const { maxFeePerGas, maxPriorityFeePerGas } = opts;
+    const rpcUrl = rpcMap[chain.toLowerCase()]
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+    const evm_mnemonic = this.config.get('EVM_MNEMONIC');
+    this.signer = ethers.Wallet.fromMnemonic(evm_mnemonic).connect(provider)
+    
+    const txRequest: TransactionRequest = {
+      ...opts,
+      maxPriorityFeePerGas: maxPriorityFeePerGas || ethers.utils.parseUnits("30", "gwei"),
+      maxFeePerGas: maxFeePerGas || ethers.utils.parseUnits("60", "gwei"),
+    };
+    await this.signer.estimateGas(txRequest);
+    const tx = await this.signer.sendTransaction(txRequest);
     return tx;
   }
 }

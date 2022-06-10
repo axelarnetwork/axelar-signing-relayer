@@ -166,6 +166,17 @@ export class AppService {
     };
   }
 
+  async sendEvmTx(dto: {
+    chain: string;
+    gatewayAddress: string;
+    txRequest: TransactionRequest;
+  }): Promise<{ data: string }> {
+    const { chain, gatewayAddress, txRequest } = dto;
+    return {
+      data: await this.evmSigningClient.sendTx(chain, gatewayAddress, txRequest),
+    };
+  }
+
   private async signAndGetTxBytes(
     encodeData: EncodeObject[],
     fee: StdFee,
