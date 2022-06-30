@@ -2,20 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { ethers } from 'ethers';
 import { TransactionRequest } from '@ethersproject/providers';
 import { ConfigService } from '@nestjs/config';
-
-const rpcMap: { [key: string]: string } = {
-  fantom: 'https://rpc.testnet.fantom.network',
-  polygon: 'https://polygon-mumbai.infura.io/v3/467477790bfa4b7684be1336e789a068',
-  moonbeam: 'https://rpc.api.moonbase.moonbeam.network',
-  avalanche: 'https://api.avax-test.network/ext/bc/C/rpc',
-  ethereum: 'https://ropsten.infura.io/v3/467477790bfa4b7684be1336e789a068',
-};
+import { getRpcMap } from './config/rpcMap';
 
 @Injectable()
 export class EvmSigningClientUtil {
   private signer!: ethers.providers.JsonRpcSigner | ethers.Wallet;
-
-  constructor(private config: ConfigService) {}
+  private env: string;
+  constructor(private config: ConfigService) {
+    this.env = config.get('ENVIRONMENT');
+  }
 
   public async signTx(
     chain: string,
@@ -23,7 +18,7 @@ export class EvmSigningClientUtil {
     opts: TransactionRequest,
   ): Promise<any> {
     const { maxFeePerGas, maxPriorityFeePerGas } = opts;
-    const rpcUrl = rpcMap[chain.toLowerCase()];
+    const rpcUrl = getRpcMap(this.env)[chain.toLowerCase()];
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const evm_mnemonic = this.config.get('EVM_MNEMONIC');
     this.signer = ethers.Wallet.fromMnemonic(evm_mnemonic).connect(provider);
@@ -44,7 +39,7 @@ export class EvmSigningClientUtil {
     opts: TransactionRequest,
   ): Promise<ethers.providers.TransactionResponse> {
     const { maxFeePerGas, maxPriorityFeePerGas } = opts;
-    const rpcUrl = rpcMap[chain.toLowerCase()];
+    const rpcUrl = getRpcMap(this.env)[chain.toLowerCase()];
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const evm_mnemonic = this.config.get('EVM_MNEMONIC');
     this.signer = ethers.Wallet.fromMnemonic(evm_mnemonic).connect(provider);
