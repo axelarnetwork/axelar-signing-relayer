@@ -13,6 +13,7 @@ import { STANARD_GAS_PRICE as gasPrice } from './config/gasPrice';
 export class AxelarSigningClientUtil {
   public environment: string;
   public signer: AxelarSigningClient;
+  public stargateOptions: SigningStargateClientOptions;
 
   constructor(private config: ConfigService) {
     const environment = this.config.get('ENVIRONMENT');
@@ -22,11 +23,11 @@ export class AxelarSigningClientUtil {
   }
 
   public async initSigner(environment: Environment, mnemonic: string) {
-    const stargateOptions: SigningStargateClientOptions = { gasPrice };
+    this.stargateOptions = { gasPrice };
     const config: AxelarSigningClientConfig = {
       environment,
       cosmosBasedWalletDetails: { mnemonic },
-      options: stargateOptions,
+      options: this.stargateOptions,
     };
     this.signer = await AxelarSigningClient.initOrGetAxelarSigningClient(
       config,

@@ -20,7 +20,8 @@ import { ConfirmDepositDto } from './dto/confirm-deposit.dto';
 import { toAccAddress } from '@cosmjs/stargate/build/queryclient/utils';
 import { STANDARD_FEE } from '@axelar-network/axelarjs-sdk';
 import { LinkAddressDto } from './dto/link-address.dto';
-import { DeliverTxResponse, StdFee } from '@cosmjs/stargate';
+import { DeliverTxResponse, StdFee, calculateFee } from '@cosmjs/stargate';
+import { assertDefined} from '@cosmjs/utils';
 import { ethers, utils } from 'ethers';
 import { EvmSigningClientUtil } from './evm-signer.service';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
@@ -90,7 +91,11 @@ export class AppService {
         txId: utils.arrayify(txHash),
       }),
     };
-    return await this.signAndGetTxBytes([payload], "auto", memo);
+    let usedFee = fee;
+    if (!usedFee) {
+      usedFee = await this.getStandardFee("auto",[payload], memo);
+    }
+    return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
 
   async executePendingTransfers(dto: any): Promise<Uint8Array> {
@@ -105,7 +110,11 @@ export class AppService {
         sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
       }),
     };
-    return await this.signAndGetTxBytes([payload], "auto", memo);
+    let usedFee = fee;
+    if (!usedFee) {
+      usedFee = await this.getStandardFee("auto",[payload], memo);
+    }
+    return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
 
   async signCommands(dto: any): Promise<Uint8Array> {
@@ -121,7 +130,11 @@ export class AppService {
         chain,
       }),
     };
-    return await this.signAndGetTxBytes([payload], "auto", memo);
+    let usedFee = fee;
+    if (!usedFee) {
+      usedFee = await this.getStandardFee("auto",[payload], memo);
+    }
+    return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
 
   async createPendingTransfers(dto: any): Promise<Uint8Array> {
@@ -137,7 +150,11 @@ export class AppService {
         chain,
       }),
     };
-    return await this.signAndGetTxBytes([payload], "auto", memo);
+    let usedFee = fee;
+    if (!usedFee) {
+      usedFee = await this.getStandardFee("auto",[payload], memo);
+    }
+    return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
 
   async routeIBCTransfers(dto: any): Promise<Uint8Array> {
@@ -152,7 +169,11 @@ export class AppService {
         sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
       }),
     };
-    return await this.signAndGetTxBytes([payload], "auto", memo);
+    let usedFee = fee;
+    if (!usedFee) {
+      usedFee = await this.getStandardFee("auto",[payload], memo);
+    }
+    return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
 
   async signEvmTx(dto: {
@@ -184,5 +205,19 @@ export class AppService {
     memo?: string,
   ): Promise<Uint8Array> {
     return await this.axelarSigningClient.signer.signAndGetTxBytes(encodeData, fee as any, memo);
+  }
+
+  private async getStandardFee(fee: any, messages, memo) {
+    let usedFee;
+    if (fee == "auto" || typeof fee === "number") {
+        assertDefined(this.axelarSigningClient.stargateOptions.gasPrice, "Gas price must be set in the client options when auto gas is used.");
+        const gasEstimation = await this.axelarSigningClient.signer.simulate(this.axelarSigningClient.signer.signerAddress, messages, memo);
+        const multiplier = typeof fee === "number" ? fee : 1.3;
+        usedFee = calculateFee(Math.round(gasEstimation * multiplier), this.axelarSigningClient.stargateOptions.gasPrice);
+    }
+    else {
+        usedFee = fee;
+    }
+    return usedFee;
   }
 }
