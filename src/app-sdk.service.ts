@@ -5,6 +5,9 @@ import {
   Environment,
 } from '@axelar-network/axelarjs-sdk';
 import { ConfigService } from '@nestjs/config';
+import { SigningStargateClientOptions } from '@cosmjs/stargate';
+import { STANARD_GAS_PRICE as gasPrice } from './config/gasPrice';
+
 
 @Injectable()
 export class AxelarSigningClientUtil {
@@ -19,10 +22,11 @@ export class AxelarSigningClientUtil {
   }
 
   public async initSigner(environment: Environment, mnemonic: string) {
+    const stargateOptions: SigningStargateClientOptions = { gasPrice };
     const config: AxelarSigningClientConfig = {
       environment,
       cosmosBasedWalletDetails: { mnemonic },
-      options: {},
+      options: stargateOptions,
     };
     this.signer = await AxelarSigningClient.initOrGetAxelarSigningClient(
       config,

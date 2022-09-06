@@ -90,7 +90,7 @@ export class AppService {
         txId: utils.arrayify(txHash),
       }),
     };
-    return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
+    return await this.signAndGetTxBytes([payload], "auto", memo);
   }
 
   async executePendingTransfers(dto: any): Promise<Uint8Array> {
@@ -105,7 +105,7 @@ export class AppService {
         sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
       }),
     };
-    return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
+    return await this.signAndGetTxBytes([payload], "auto", memo);
   }
 
   async signCommands(dto: any): Promise<Uint8Array> {
@@ -121,7 +121,7 @@ export class AppService {
         chain,
       }),
     };
-    return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
+    return await this.signAndGetTxBytes([payload], "auto", memo);
   }
 
   async createPendingTransfers(dto: any): Promise<Uint8Array> {
@@ -137,7 +137,7 @@ export class AppService {
         chain,
       }),
     };
-    return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
+    return await this.signAndGetTxBytes([payload], "auto", memo);
   }
 
   async routeIBCTransfers(dto: any): Promise<Uint8Array> {
@@ -152,7 +152,7 @@ export class AppService {
         sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
       }),
     };
-    return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
+    return await this.signAndGetTxBytes([payload], "auto", memo);
   }
 
   async signEvmTx(dto: {
@@ -180,9 +180,9 @@ export class AppService {
 
   private async signAndGetTxBytes(
     encodeData: EncodeObject[],
-    fee: StdFee,
+    fee: StdFee | string,
     memo?: string,
   ): Promise<Uint8Array> {
-    return await this.axelarSigningClient.signer.signAndGetTxBytes(encodeData, fee, memo);
+    return await this.axelarSigningClient.signer.signAndGetTxBytes(encodeData, fee as any, memo);
   }
 }
