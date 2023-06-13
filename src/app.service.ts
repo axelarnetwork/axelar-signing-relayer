@@ -12,6 +12,7 @@ import {
   ConfirmDepositRequest as EvmConfirmDepositRequest,
   ConfirmGatewayTxRequest,
   LinkRequest as EvmLinkRequest,
+  RouteMessageRequest,
   CreatePendingTransfersRequest,
   SignCommandsRequest,
   protobufPackage as EvmProtobufPackage,
@@ -21,10 +22,11 @@ import { toAccAddress } from '@cosmjs/stargate/build/queryclient/utils';
 import { STANDARD_FEE } from '@axelar-network/axelarjs-sdk';
 import { LinkAddressDto } from './dto/link-address.dto';
 import { DeliverTxResponse, StdFee, calculateFee } from '@cosmjs/stargate';
-import { assertDefined} from '@cosmjs/utils';
+import { assertDefined } from '@cosmjs/utils';
 import { ethers, utils } from 'ethers';
 import { EvmSigningClientUtil } from './evm-signer.service';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
+import { RouteMessageDto } from './dto/route-message.dto';
 
 @Injectable()
 export class AppService {
@@ -80,6 +82,25 @@ export class AppService {
           };
     return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
   }
+
+  async routeMessage(dto: RouteMessageDto): Promise<Uint8Array> {
+    const { id, payload, fee, memo } = dto;
+    console.log(dto);
+    const _payload: EncodeObject = {
+      typeUrl: `/${axelarnetProtobufPackage}.`,
+      value: RouteMessageRequest.fromPartial({
+        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        id,
+        payload,
+      }),
+    };
+    let usedFee = fee;
+    if (!usedFee) {
+      usedFee = await this.getStandardFee('auto', [payload], memo);
+    }
+    return await this.signAndGetTxBytes([_payload], usedFee, memo);
+  }
+
   async confirmGatewayTx(dto: any): Promise<Uint8Array> {
     const { memo, fee, chain, txHash } = dto;
     console.log(dto);
@@ -93,7 +114,7 @@ export class AppService {
     };
     let usedFee = fee;
     if (!usedFee) {
-      usedFee = await this.getStandardFee("auto",[payload], memo);
+      usedFee = await this.getStandardFee('auto', [payload], memo);
     }
     return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
@@ -112,7 +133,7 @@ export class AppService {
     };
     let usedFee = fee;
     if (!usedFee) {
-      usedFee = await this.getStandardFee("auto",[payload], memo);
+      usedFee = await this.getStandardFee('auto', [payload], memo);
     }
     return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
@@ -132,7 +153,7 @@ export class AppService {
     };
     let usedFee = fee;
     if (!usedFee) {
-      usedFee = await this.getStandardFee("auto",[payload], memo);
+      usedFee = await this.getStandardFee('auto', [payload], memo);
     }
     return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
@@ -152,7 +173,7 @@ export class AppService {
     };
     let usedFee = fee;
     if (!usedFee) {
-      usedFee = await this.getStandardFee("auto",[payload], memo);
+      usedFee = await this.getStandardFee('auto', [payload], memo);
     }
     return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
@@ -171,7 +192,7 @@ export class AppService {
     };
     let usedFee = fee;
     if (!usedFee) {
-      usedFee = await this.getStandardFee("auto",[payload], memo);
+      usedFee = await this.getStandardFee('auto', [payload], memo);
     }
     return await this.signAndGetTxBytes([payload], usedFee, memo);
   }
@@ -209,14 +230,23 @@ export class AppService {
 
   private async getStandardFee(fee: any, messages, memo) {
     let usedFee;
-    if (fee == "auto" || typeof fee === "number") {
-        assertDefined(this.axelarSigningClient.stargateOptions.gasPrice, "Gas price must be set in the client options when auto gas is used.");
-        const gasEstimation = await this.axelarSigningClient.signer.simulate(this.axelarSigningClient.signer.signerAddress, messages, memo);
-        const multiplier = typeof fee === "number" ? fee : 1.3;
-        usedFee = calculateFee(Math.round(gasEstimation * multiplier), this.axelarSigningClient.stargateOptions.gasPrice);
-    }
-    else {
-        usedFee = fee;
+    if (fee == 'auto' || typeof fee === 'number') {
+      assertDefined(
+        this.axelarSigningClient.stargateOptions.gasPrice,
+        'Gas price must be set in the client options when auto gas is used.',
+      );
+      const gasEstimation = await this.axelarSigningClient.signer.simulate(
+        this.axelarSigningClient.signer.signerAddress,
+        messages,
+        memo,
+      );
+      const multiplier = typeof fee === 'number' ? fee : 1.3;
+      usedFee = calculateFee(
+        Math.round(gasEstimation * multiplier),
+        this.axelarSigningClient.stargateOptions.gasPrice,
+      );
+    } else {
+      usedFee = fee;
     }
     return usedFee;
   }
