@@ -86,7 +86,7 @@ export class AppService {
     const { id, payload, fee, memo } = dto;
     console.log(dto);
     const _payload: EncodeObject = {
-      typeUrl: `/${axelarnetProtobufPackage}.`,
+      typeUrl: `/${axelarnetProtobufPackage}.RouteMessageRequest`,
       value: RouteMessageRequest.fromPartial({
         sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
         id,
