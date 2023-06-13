@@ -11,12 +11,11 @@ import {
 import {
   ConfirmDepositRequest as EvmConfirmDepositRequest,
   ConfirmGatewayTxRequest,
-  LinkRequest as EvmLinkRequest,
-  RouteMessageRequest,
   CreatePendingTransfersRequest,
   SignCommandsRequest,
   protobufPackage as EvmProtobufPackage,
 } from '@axelar-network/axelarjs-types/axelar/evm/v1beta1/tx';
+import { RouteMessageRequest } from '@axelar-network/axelarjs-types/axelar/axelarnet/v1beta1/tx';
 import { ConfirmDepositDto } from './dto/confirm-deposit.dto';
 import { toAccAddress } from '@cosmjs/stargate/build/queryclient/utils';
 import { STANDARD_FEE } from '@axelar-network/axelarjs-sdk';
@@ -91,7 +90,7 @@ export class AppService {
       value: RouteMessageRequest.fromPartial({
         sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
         id,
-        payload,
+        payload: utils.arrayify(payload),
       }),
     };
     let usedFee = fee;
