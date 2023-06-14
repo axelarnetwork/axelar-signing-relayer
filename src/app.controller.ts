@@ -2,6 +2,7 @@ import { Body, Controller, Get, Headers, Post, HttpCode, HttpStatus } from '@nes
 import { AppService } from './app.service';
 import { ConfirmDepositDto } from './dto/confirm-deposit.dto';
 import { LinkAddressDto } from './dto/link-address.dto';
+import { RouteMessageDto } from './dto/route-message.dto';
 
 @Controller()
 export class AppController {
@@ -22,6 +23,12 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   confirmDeposit(@Body() dto: ConfirmDepositDto, @Headers('x-trace-id') traceId: string) {
     return this.appService.confirmDeposit(dto);
+  }
+
+  @Post('route_message')
+  @HttpCode(HttpStatus.OK)
+  routeMessage(@Body() dto: RouteMessageDto, @Headers('x-trace-id') traceId: string) {
+    return this.appService.routeMessage(dto);
   }
 
   @Post('confirm_gateway_tx')
@@ -65,5 +72,4 @@ export class AppController {
   sendEvmTx(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
     return this.appService.sendEvmTx(dto);
   }
-
 }
