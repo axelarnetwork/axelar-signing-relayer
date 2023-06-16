@@ -6,9 +6,7 @@ import { ConfigModule } from './config/config.module';
 import { EvmSigningClientUtil } from './evm-signer.service';
 
 @Module({
-  imports: [
-    ConfigModule
-  ],
+  imports: [ConfigModule],
   controllers: [AppController],
   providers: [AppService, AxelarSigningClientUtil, EvmSigningClientUtil],
 })

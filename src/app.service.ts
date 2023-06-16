@@ -95,7 +95,7 @@ export class AppService {
     };
     let usedFee = fee;
     if (!usedFee) {
-      usedFee = await this.getStandardFee('auto', [payload], memo);
+      usedFee = await this.getStandardFee('auto', [_payload], memo);
     }
     return await this.signAndGetTxBytes([_payload], usedFee, memo);
   }
