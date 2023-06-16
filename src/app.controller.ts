@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import { ConfirmDepositDto } from './dto/confirm-deposit.dto';
 import { LinkAddressDto } from './dto/link-address.dto';
 import { RouteMessageDto } from './dto/route-message.dto';
+import { ethers } from 'ethers';
 
 @Controller()
 export class AppController {
@@ -69,7 +70,10 @@ export class AppController {
 
   @Post('send_evm_tx')
   @HttpCode(HttpStatus.OK)
-  sendEvmTx(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+  sendEvmTx(
+    @Body() dto: any,
+    @Headers('x-trace-id') traceId: string,
+  ): Promise<{ data: ethers.providers.TransactionResponse }> {
     return this.appService.sendEvmTx(dto);
   }
 }
