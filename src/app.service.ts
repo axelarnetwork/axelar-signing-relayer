@@ -211,9 +211,10 @@ export class AppService {
     chain: string;
     gatewayAddress: string;
     txRequest: TransactionRequest;
+    rpcUrl?: string;
   }): Promise<{ data: ethers.providers.TransactionResponse }> {
-    const { chain, gatewayAddress, txRequest } = dto;
-    const data = await this.evmSigningClient.sendTx(chain, gatewayAddress, txRequest);
+    const { chain, gatewayAddress, txRequest, rpcUrl } = dto;
+    const data = await this.evmSigningClient.sendTx(chain, gatewayAddress, txRequest, rpcUrl);
     return {
       data,
     };
