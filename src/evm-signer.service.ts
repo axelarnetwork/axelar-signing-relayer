@@ -37,9 +37,10 @@ export class EvmSigningClientUtil {
     chain: string,
     gatewayAddress: string,
     opts: TransactionRequest,
+    customRpcUrl?: string,
   ): Promise<ethers.providers.TransactionResponse> {
     const { maxFeePerGas, maxPriorityFeePerGas } = opts;
-    const rpcUrl = getRpcMap(this.env)[chain.toLowerCase()];
+    const rpcUrl = customRpcUrl || getRpcMap(this.env)[chain.toLowerCase()];
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const evm_mnemonic = this.config.get('EVM_MNEMONIC');
     this.signer = ethers.Wallet.fromMnemonic(evm_mnemonic).connect(provider);
