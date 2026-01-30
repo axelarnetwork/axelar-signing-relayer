@@ -22,5 +22,4 @@ export class LinkAddressDto {
   @IsBoolean()
   @IsNotEmpty()
   broadcast: boolean;
-
 }
