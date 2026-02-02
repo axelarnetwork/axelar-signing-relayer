@@ -17,10 +17,10 @@ import {
 } from '@axelar-network/axelarjs-types/axelar/evm/v1beta1/tx';
 import { RouteMessageRequest } from '@axelar-network/axelarjs-types/axelar/axelarnet/v1beta1/tx';
 import { ConfirmDepositDto } from './dto/confirm-deposit.dto';
-import { toAccAddress } from '@cosmjs/stargate/build/queryclient/utils';
+import { fromBech32 } from '@cosmjs/encoding';
 import { STANDARD_FEE } from '@axelar-network/axelarjs-sdk';
 import { LinkAddressDto } from './dto/link-address.dto';
-import { DeliverTxResponse, StdFee, calculateFee } from '@cosmjs/stargate';
+import { DeliverTxResponse, StdFee, calculateFee, isDynamicGasPriceConfig } from '@cosmjs/stargate';
 import { assertDefined } from '@cosmjs/utils';
 import { ethers, utils } from 'ethers';
 import { EvmSigningClientUtil } from './evm-signer.service';
@@ -43,7 +43,7 @@ export class AppService {
     const payload: EncodeObject = {
       typeUrl: `/${axelarnetProtobufPackage}.LinkRequest`,
       value: AxelarnetLinkRequest.fromPartial({
-        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        sender: this.axelarSigningClient.signer.signerAddress,
         recipientAddr,
         recipientChain,
         asset,
@@ -65,18 +65,18 @@ export class AppService {
         ? {
             typeUrl: `/${axelarnetProtobufPackage}.ConfirmDepositRequest`,
             value: AxelarnetConfirmDepositRequest.fromPartial({
-              sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
-              depositAddress: toAccAddress(depositAddress),
+              sender: this.axelarSigningClient.signer.signerAddress,
+              depositAddress: Buffer.from(fromBech32(depositAddress).data),
               denom,
             }),
           }
         : {
             typeUrl: `/${EvmProtobufPackage}.ConfirmDepositRequest`,
             value: EvmConfirmDepositRequest.fromPartial({
-              sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+              sender: this.axelarSigningClient.signer.signerAddress,
               chain: sourceChain,
-              txId: utils.arrayify(txHash),
-              burnerAddress: utils.arrayify(burnerAddress),
+              txId: Buffer.from(utils.arrayify(txHash)),
+              burnerAddress: Buffer.from(utils.arrayify(burnerAddress)),
             }),
           };
     return await this.signAndGetTxBytes([payload], fee || STANDARD_FEE, memo);
@@ -88,9 +88,9 @@ export class AppService {
     const _payload: EncodeObject = {
       typeUrl: `/${axelarnetProtobufPackage}.RouteMessageRequest`,
       value: RouteMessageRequest.fromPartial({
-        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        sender: this.axelarSigningClient.signer.signerAddress,
         id,
-        payload: utils.arrayify(payload),
+        payload: Buffer.from(utils.arrayify(payload)),
       }),
     };
     let usedFee = fee;
@@ -106,9 +106,9 @@ export class AppService {
     const payload: EncodeObject = {
       typeUrl: `/${EvmProtobufPackage}.ConfirmGatewayTxRequest`,
       value: ConfirmGatewayTxRequest.fromPartial({
-        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        sender: this.axelarSigningClient.signer.signerAddress,
         chain,
-        txId: utils.arrayify(txHash),
+        txId: Buffer.from(utils.arrayify(txHash)),
       }),
     };
     let usedFee = fee;
@@ -127,7 +127,7 @@ export class AppService {
     const payload: EncodeObject = {
       typeUrl: `/${axelarnetProtobufPackage}.ExecutePendingTransfersRequest`,
       value: ExecutePendingTransfersRequest.fromPartial({
-        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        sender: this.axelarSigningClient.signer.signerAddress,
       }),
     };
     let usedFee = fee;
@@ -146,7 +146,7 @@ export class AppService {
     const payload: EncodeObject = {
       typeUrl: `/${EvmProtobufPackage}.SignCommandsRequest`,
       value: SignCommandsRequest.fromPartial({
-        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        sender: this.axelarSigningClient.signer.signerAddress,
         chain,
       }),
     };
@@ -166,7 +166,7 @@ export class AppService {
     const payload: EncodeObject = {
       typeUrl: `/${EvmProtobufPackage}.CreatePendingTransfersRequest`,
       value: CreatePendingTransfersRequest.fromPartial({
-        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        sender: this.axelarSigningClient.signer.signerAddress,
         chain,
       }),
     };
@@ -186,7 +186,7 @@ export class AppService {
     const payload: EncodeObject = {
       typeUrl: `/${axelarnetProtobufPackage}.RouteIBCTransfersRequest`,
       value: RouteIBCTransfersRequest.fromPartial({
-        sender: toAccAddress(this.axelarSigningClient.signer.signerAddress),
+        sender: this.axelarSigningClient.signer.signerAddress,
       }),
     };
     let usedFee = fee;
@@ -224,26 +224,47 @@ export class AppService {
     fee: StdFee | string,
     memo?: string,
   ): Promise<Uint8Array> {
-    return await this.axelarSigningClient.signer.signAndGetTxBytes(encodeData, fee as any, memo);
+    const signerData = await this.withRetry(() => this.axelarSigningClient.getSignerData());
+    const txBytes = await this.withRetry(() =>
+      this.axelarSigningClient.signer.signAndGetTxBytes(encodeData, fee as any, memo, signerData),
+    );
+    this.axelarSigningClient.incrementSequence();
+    return txBytes;
+  }
+
+  private async withRetry<T>(fn: () => Promise<T>, retries = 2, baseDelayMs = 500): Promise<T> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        if (attempt === retries) {
+          throw error;
+        }
+        await new Promise((resolve) => setTimeout(resolve, baseDelayMs * (attempt + 1)));
+      }
+    }
+    throw lastError;
   }
 
   private async getStandardFee(fee: any, messages, memo) {
     let usedFee;
     if (fee == 'auto' || typeof fee === 'number') {
-      assertDefined(
-        this.axelarSigningClient.stargateOptions.gasPrice,
-        'Gas price must be set in the client options when auto gas is used.',
-      );
-      const gasEstimation = await this.axelarSigningClient.signer.simulate(
-        this.axelarSigningClient.signer.signerAddress,
-        messages,
-        memo,
+      const gasPrice = this.axelarSigningClient.stargateOptions.gasPrice;
+      assertDefined(gasPrice, 'Gas price must be set in the client options when auto gas is used.');
+      if (isDynamicGasPriceConfig(gasPrice)) {
+        throw new Error('Dynamic gas price config is not supported for fee calculation.');
+      }
+      const gasEstimation = await this.withRetry(() =>
+        this.axelarSigningClient.signer.simulate(
+          this.axelarSigningClient.signer.signerAddress,
+          messages,
+          memo,
+        ),
       );
       const multiplier = typeof fee === 'number' ? fee : 1.3;
-      usedFee = calculateFee(
-        Math.round(gasEstimation * multiplier),
-        this.axelarSigningClient.stargateOptions.gasPrice,
-      );
+      usedFee = calculateFee(Math.round(gasEstimation * multiplier), gasPrice);
     } else {
       usedFee = fee;
     }

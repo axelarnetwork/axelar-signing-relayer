@@ -28,8 +28,10 @@ export class EvmSigningClientUtil {
       maxPriorityFeePerGas: maxPriorityFeePerGas || ethers.utils.parseUnits('30', 'gwei'),
       maxFeePerGas: maxFeePerGas || ethers.utils.parseUnits('60', 'gwei'),
     };
-    await this.signer.estimateGas(txRequest);
-    const tx = await this.signer.signTransaction(await this.signer.populateTransaction(txRequest));
+    await this.withRetry(() => this.signer.estimateGas(txRequest));
+    const tx = await this.withRetry(async () =>
+      this.signer.signTransaction(await this.signer.populateTransaction(txRequest)),
+    );
     return tx;
   }
 
@@ -48,9 +50,25 @@ export class EvmSigningClientUtil {
       maxPriorityFeePerGas: maxPriorityFeePerGas || ethers.utils.parseUnits('30', 'gwei'),
       maxFeePerGas: maxFeePerGas || ethers.utils.parseUnits('60', 'gwei'),
     };
-    await this.signer.estimateGas(txRequest);
-    const tx = await this.signer.sendTransaction(txRequest);
-    tx.wait(1);
+    await this.withRetry(() => this.signer.estimateGas(txRequest));
+    const tx = await this.withRetry(() => this.signer.sendTransaction(txRequest));
+    await this.withRetry(() => tx.wait(1));
     return tx;
+  }
+
+  private async withRetry<T>(fn: () => Promise<T>, retries = 2, baseDelayMs = 500): Promise<T> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        if (attempt === retries) {
+          throw error;
+        }
+        await new Promise((resolve) => setTimeout(resolve, baseDelayMs * (attempt + 1)));
+      }
+    }
+    throw lastError;
   }
 }

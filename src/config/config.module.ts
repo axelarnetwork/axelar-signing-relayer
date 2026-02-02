@@ -9,9 +9,8 @@ import * as Joi from 'joi';
       validationSchema: Joi.object({
         KEPLR_MNEMONIC: Joi.string().required(),
         EVM_MNEMONIC: Joi.string().required(),
-        ENVIRONMENT: Joi.string()
-          .valid('local', 'mainnet', 'testnet', 'devnet')
-          .required(),
+        ENVIRONMENT: Joi.string().valid('local', 'mainnet', 'testnet', 'devnet').required(),
+        GAS_PRICE: Joi.string().optional(),
       }),
     }),
   ],

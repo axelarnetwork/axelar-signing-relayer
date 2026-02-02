@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class ConfirmDepositDto {
   @IsString()
   @IsNotEmpty()
-  module: "axelarnet" | "evm";
+  module: 'axelarnet' | 'evm';
 
   @IsString()
   @IsNotEmpty()
