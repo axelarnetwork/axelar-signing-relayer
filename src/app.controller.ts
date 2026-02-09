@@ -34,8 +34,9 @@ export class AppController {
 
   @Post('confirm_gateway_tx')
   @HttpCode(HttpStatus.OK)
-  confirmGatewayTx(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
-    return this.appService.confirmGatewayTx(dto);
+  async confirmGatewayTx(@Body() dto: any, @Headers('x-trace-id') traceId: string) {
+    const data = await this.appService.confirmGatewayTx(dto);
+    return { data };
   }
 
   @Post('execute_pending_transfers')
