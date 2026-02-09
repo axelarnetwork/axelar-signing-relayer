@@ -34,6 +34,22 @@ export class AppService {
     private evmSigningClient: EvmSigningClientUtil,
   ) {}
 
+  private cosmosSigningQueue: Promise<void> = Promise.resolve();
+
+  private async withCosmosSigningLock<T>(fn: () => Promise<T>): Promise<T> {
+    const previous = this.cosmosSigningQueue;
+    let release: () => void;
+    this.cosmosSigningQueue = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await previous;
+    try {
+      return await fn();
+    } finally {
+      release!();
+    }
+  }
+
   getHello(): string {
     return 'Hello World!';
   }
@@ -224,12 +240,17 @@ export class AppService {
     fee: StdFee | string,
     memo?: string,
   ): Promise<Uint8Array> {
-    const signerData = await this.withRetry(() => this.axelarSigningClient.getSignerData());
-    const txBytes = await this.withRetry(() =>
-      this.axelarSigningClient.signer.signAndGetTxBytes(encodeData, fee as any, memo, signerData),
-    );
-    this.axelarSigningClient.incrementSequence();
-    return txBytes;
+    return this.withCosmosSigningLock(async () => {
+      const signerData = await this.withRetry(() => this.axelarSigningClient.getSignerData());
+      return this.withRetry(() =>
+        this.axelarSigningClient.signer.signAndGetTxBytes(
+          encodeData,
+          fee as any,
+          memo,
+          signerData,
+        ),
+      );
+    });
   }
 
   private async withRetry<T>(fn: () => Promise<T>, retries = 2, baseDelayMs = 500): Promise<T> {
