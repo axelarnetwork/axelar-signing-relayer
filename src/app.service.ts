@@ -242,6 +242,11 @@ export class AppService {
   ): Promise<Uint8Array> {
     return this.withCosmosSigningLock(async () => {
       const signerData = await this.withRetry(() => this.axelarSigningClient.getSignerData());
+      console.log('[cosmos signerData]', {
+        accountNumber: signerData.accountNumber,
+        sequence: signerData.sequence,
+        messageCount: encodeData.length,
+      });
       return this.withRetry(() =>
         this.axelarSigningClient.signer.signAndGetTxBytes(
           encodeData,
