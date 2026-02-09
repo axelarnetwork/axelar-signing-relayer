@@ -23,12 +23,15 @@ describe('AppController (e2e)', () => {
       expect(body.data.length).toBeGreaterThan(0);
       return;
     }
-    if (body && typeof body === 'object' && Object.keys(body).length > 0) {
-      const keys = Object.keys(body);
-      const allNumeric = keys.every((key) => String(Number(key)) === key);
-      if (allNumeric) {
-        expect(keys.length).toBeGreaterThan(0);
-        return;
+    if (body && typeof body === 'object') {
+      const payload = body.data ?? body;
+      if (payload && typeof payload === 'object') {
+        const keys = Object.keys(payload);
+        const allNumeric = keys.length > 0 && keys.every((key) => String(Number(key)) === key);
+        if (allNumeric) {
+          expect(keys.length).toBeGreaterThan(0);
+          return;
+        }
       }
     }
     throw new Error(`Unexpected response body: ${JSON.stringify(body)}`);
