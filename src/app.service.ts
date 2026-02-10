@@ -34,19 +34,19 @@ export class AppService {
     private evmSigningClient: EvmSigningClientUtil,
   ) {}
 
-  private cosmosSigningQueue: Promise<void> = Promise.resolve();
+  private cosmosSigningLock: Promise<void> = Promise.resolve();
 
   private async withCosmosSigningLock<T>(fn: () => Promise<T>): Promise<T> {
-    const previous = this.cosmosSigningQueue;
+    const previous = this.cosmosSigningLock;
     let release: () => void;
-    this.cosmosSigningQueue = new Promise<void>((resolve) => {
+    this.cosmosSigningLock = new Promise<void>((resolve) => {
       release = resolve;
     });
     await previous;
     try {
       return await fn();
     } finally {
-      release!();
+      release?.();
     }
   }
 
